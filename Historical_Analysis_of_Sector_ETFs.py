@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
 
 datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data'
 
@@ -16,7 +17,7 @@ def import_yahoo_data(filename):
 
 def daily_ret(df):
     '''input df, output series of daily log return'''
-    return np.log(df['Adj Close'] / df['Adj Close'].shift(-1))
+    return np.log(df['Adj Close'].shift(1) / df['Adj Close'])
 
 
 def daily_to_monthly_ret(df):
@@ -54,22 +55,25 @@ if __name__ == '__main__':
 
     '''Calculate the covariance matrix of daily and monthly returns. Comment on difference of the two'''
     for Ticker in ETF_dict.keys():
-        exec(Ticker+"_daily_ret = daily_ret("+Ticker+")")
+        exec(Ticker+"_daily_ret = daily_ret("+Ticker+").dropna(how='any')")
         exec(Ticker+"_monthly_ret = daily_to_monthly_ret("+Ticker+"_daily_ret)")
-    
+
     matrix_daily_ret = pd.DataFrame()
     matrix_monthly_ret = pd.DataFrame()
-    exec("matrix_daily_ret = pd.concat("+str([Ticker+"_daily_ret" for Ticker in ETF_dict.keys()]).replace("'","")+", axis=1, keys="+str([Ticker for Ticker in ETF_dict.keys()])+")")
-    exec("matrix_monthly_ret = pd.concat("+str([Ticker+"_monthly_ret" for Ticker in ETF_dict.keys()]).replace("'","")+", axis=1, keys="+str([Ticker for Ticker in ETF_dict.keys()])+")")
+    exec("matrix_daily_ret = pd.concat("+str([Ticker+"_daily_ret" for Ticker in ETF_dict.keys(
+    )]).replace("'", "")+", axis=1, keys="+str([Ticker for Ticker in ETF_dict.keys()])+")")
+    exec("matrix_monthly_ret = pd.concat("+str([Ticker+"_monthly_ret" for Ticker in ETF_dict.keys(
+    )]).replace("'", "")+", axis=1, keys="+str([Ticker for Ticker in ETF_dict.keys()])+")")
     cov_matrix_daily_ret = matrix_daily_ret.cov()
     cov_matrix_monthly_ret = matrix_monthly_ret.cov()
 
-    ticks = np.arange(0,len(ETF_dict),1)
+    ticks = np.arange(0, len(ETF_dict), 1)
     names = list(ETF_dict.keys())
-    fig = plt.figure(figsize=(14,5))
+    fig = plt.figure(figsize=(14, 5))
 
     ax = fig.add_subplot(121)
-    cax = ax.matshow(cov_matrix_daily_ret, vmin=cov_matrix_daily_ret.min().min(), vmax=cov_matrix_daily_ret.max().max())  #绘制热力图，从-1到1
+    cax = ax.matshow(cov_matrix_daily_ret, vmin=cov_matrix_daily_ret.min(
+    ).min(), vmax=cov_matrix_daily_ret.max().max())
     fig.colorbar(cax)
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
@@ -77,27 +81,59 @@ if __name__ == '__main__':
     ax.set_yticklabels(names)
 
     bx = fig.add_subplot(122)
-    cbx = bx.matshow(cov_matrix_monthly_ret, vmin=cov_matrix_monthly_ret.min().min(), vmax=cov_matrix_monthly_ret.max().max())  #绘制热力图，从-1到1
+    cbx = bx.matshow(cov_matrix_monthly_ret, vmin=cov_matrix_monthly_ret.min(
+    ).min(), vmax=cov_matrix_monthly_ret.max().max())
     fig.colorbar(cbx)
     bx.set_xticks(ticks)
     bx.set_yticks(ticks)
     bx.set_xticklabels(names)
     bx.set_yticklabels(names)
     plt.show()
-    # the covs of daily returns and monthly returns vary for absolute value, 
+    # the covs of daily returns and monthly returns vary for absolute value,
     # while they remain similar after being scaled.
 
     '''Calculate a rolling 90-day correlation of each sector ETF with the S&P index.'''
-    roll_corr = matrix_daily_ret.rolling(window=90).corr()
-    roll_corr = roll_corr.ix[roll_corr.index.get_level_values(1) == 'SPY']
-    roll_corr.dropna(axis=0, how='any', inplace=True)
-    roll_corr.drop(columns='SPY',inplace=True)
-    roll_corr.index = roll_corr.index.droplevel(level=1)
-    roll_corr.plot()
+    corr_roll = matrix_daily_ret.rolling(window=90).corr()
+    corr_roll = corr_roll.ix[corr_roll.index.get_level_values(1) == 'SPY']
+    corr_roll.dropna(axis=0, how='any', inplace=True)
+    corr_roll.drop(columns='SPY', inplace=True)
+    corr_roll.index = corr_roll.index.droplevel(level=1)
+    corr_roll.plot()
     plt.show()
+    # corr_roll.to_csv('corr_roll.csv')
+
     # the correlations are not stable over time
     # I think the S&P's fluctuations cause them vary
 
-    x = 1
+    '''For each sector ETF, compute it's  to the market using the CAPM model
+       Compute the  for the entire historical period and also compute rolling 90-day 's'''
+    linreg = LinearRegression()
+    beta = {}
+    for Ticker in ETF_dict.keys():
+        if Ticker == 'SPY':
+            continue
+        else:
+            exec("linreg.fit(SPY_daily_ret.values.reshape(-1,1)," +
+                 Ticker+"_daily_ret.values.reshape(-1,1))")
+            beta[Ticker] = float(linreg.coef_)
 
-    # roll_corr.to_csv('roll_corr.csv')
+    beta_roll = pd.DataFrame(
+        index=SPY_daily_ret.index[89:], columns=list(ETF_dict.keys())[1:])
+    for Ticker in ETF_dict.keys():
+        if Ticker == 'SPY':
+            continue
+        else:
+            for i in range(89, len(SPY_daily_ret), 1):
+                SPY_window = SPY_daily_ret.iloc[i-89:i]
+                exec(Ticker+"_window = "+Ticker+"_daily_ret.iloc[i-89:i]")
+                exec("linreg.fit(SPY_window.values.reshape(-1,1)," +
+                     Ticker+"_window.values.reshape(-1,1))")
+                beta_roll.ix[i-89, Ticker] = float(linreg.coef_)
+    # beta_roll.to_csv('beta_roll.csv')
+
+    # rolling 90-day's beta is not consistent over the entire period.
+    # beta is not consistent with corr, because beta = corr * std(a) / std(b).
+
+    '''Compute the auto-correlation of each ETF by regressing each ETFs current days return
+       against its previous days return'''
+    
