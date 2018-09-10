@@ -136,4 +136,7 @@ if __name__ == '__main__':
 
     '''Compute the auto-correlation of each ETF by regressing each ETFs current days return
        against its previous days return'''
-    
+    auto_corr = {}
+    for Ticker in ETF_dict.keys():
+        exec("auto_corr['"+Ticker+"'] = "+Ticker+"_daily_ret.autocorr(lag=1)")
+    # there's little auto-correlation evidence.
