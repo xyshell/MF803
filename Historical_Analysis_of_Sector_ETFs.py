@@ -3,12 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data'
+datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data\\'
 
 
 def import_yahoo_data(filename):
     '''input filename(ex.SPY), output dataframe with date index'''
-    filepath = datapath + '\\' + filename + '.csv'
+    filepath = datapath + filename + '.csv'
     df = pd.read_csv(filepath)
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index('Date', inplace=True)
@@ -48,12 +48,15 @@ if __name__ == '__main__':
     '''read data'''
     for Ticker in ETF_dict.keys():
         exec(Ticker+" = import_yahoo_data('"+Ticker+"')")
+    print("data has been downloaded to file 'data'\n")
 
-    '''Calculate the annualized return and standard deviation of each ETF'''
+    '''Calculate the annualized return and standard deviation of ETFs'''
     for Ticker in ETF_dict.keys():
         exec(Ticker+"_ret, "+Ticker+"_std" + " = annual_ret_std("+Ticker+")")
+    print("annualized return and standard deviation are saved in" +
+          " 'Ticker_ret' and 'Ticker_std' \n")
 
-    '''Calculate the covariance matrix of daily and monthly returns. Comment on difference of the two'''
+    '''Calculate the covariance matrix of daily and monthly returns.'''
     for Ticker in ETF_dict.keys():
         exec(Ticker+"_daily_ret = daily_ret("+Ticker+").dropna(how='any')")
         exec(Ticker+"_monthly_ret = daily_to_monthly_ret("+Ticker+"_daily_ret)")
@@ -89,6 +92,9 @@ if __name__ == '__main__':
     bx.set_xticklabels(names)
     bx.set_yticklabels(names)
     plt.show()
+    print("covariance matrix of daily returns are saved in 'cov_matrix_daily_ret'" +
+          " and that of monthly returns are saved in 'cov_matrix_monthly_ret'," +
+          " picture has been drawn for visulization\n")
     # the covs of daily returns and monthly returns vary for absolute value,
     # while they remain similar after being scaled.
 
@@ -101,12 +107,12 @@ if __name__ == '__main__':
     corr_roll.plot()
     plt.show()
     # corr_roll.to_csv('corr_roll.csv')
-
+    print("90-day rolling correlation is saved in 'corr_roll'\n")
     # the correlations are not stable over time
     # I think the S&P's fluctuations cause them vary
 
     '''For each sector ETF, compute it's  to the market using the CAPM model
-       Compute the  for the entire historical period and also compute rolling 90-day 's'''
+       Compute the  for the entire historical period and also rolling 90-day's'''
     linreg = LinearRegression()
     beta = {}
     for Ticker in ETF_dict.keys():
@@ -130,13 +136,14 @@ if __name__ == '__main__':
                      Ticker+"_window.values.reshape(-1,1))")
                 beta_roll.ix[i-89, Ticker] = float(linreg.coef_)
     # beta_roll.to_csv('beta_roll.csv')
-
+    print("beta is saved in 'beta', 90-day rolling beta is saved in 'beta_roll'\n")
     # rolling 90-day's beta is not consistent over the entire period.
     # beta is not consistent with corr, because beta = corr * std(a) / std(b).
 
-    '''Compute the auto-correlation of each ETF by regressing each ETFs current days return
-       against its previous days return'''
+    '''Compute the auto-correlation of each ETF by regressing 
+       each ETFs current days return against its previous days return'''
     auto_corr = {}
     for Ticker in ETF_dict.keys():
         exec("auto_corr['"+Ticker+"'] = "+Ticker+"_daily_ret.autocorr(lag=1)")
+    print("auto-correlation of each ETF is saved in 'auto_corr'")
     # there's little auto-correlation evidence.
