@@ -3,10 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data\\'
-
-
-def import_yahoo_data(filename):
+def import_yahoo_data(datapath, filename):
     '''input filename(ex.SPY), output dataframe with date index'''
     filepath = datapath + filename + '.csv'
     df = pd.read_csv(filepath)
@@ -34,6 +31,7 @@ def annual_ret_std(df):
 
 
 if __name__ == '__main__':
+    datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data\\'
     ETF_dict = {'SPY': 'S&P Index',
                 'XLB': 'Materials',
                 'XLE': 'Energy',
@@ -47,7 +45,7 @@ if __name__ == '__main__':
 
     '''read data'''
     for Ticker in ETF_dict.keys():
-        exec(Ticker+" = import_yahoo_data('"+Ticker+"')")
+        exec(Ticker+" = import_yahoo_data(datapath, '"+Ticker+"')")
     print("data has been downloaded to file 'data'\n")
 
     '''Calculate the annualized return and standard deviation of ETFs'''
