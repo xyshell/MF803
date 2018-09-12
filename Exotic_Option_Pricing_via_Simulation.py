@@ -77,8 +77,7 @@ if __name__ == '__main__':
 
     # the prices based on average discount and on BS formula are similar
 
-    '''Calculate the payoff of a 
-fixed strike lookback put option with stike 100
+    '''Calculate the payoff of a fixed strike lookback put option with stike 100
        along all simulated path, and its simulation price by averagely discount.'''
 
     payoff_exo_opt = np.maximum(k - np.array(smin), 0)
