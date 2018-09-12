@@ -17,7 +17,7 @@ def import_yahoo_data(filename):
 
 def daily_ret(df):
     '''input df, output series of daily log return'''
-    return np.log(df['Adj Close'].shift(1) / df['Adj Close'])
+    return np.log(df['Adj Close'] / df['Adj Close'].shift(1))
 
 
 def daily_to_monthly_ret(df):
@@ -28,7 +28,7 @@ def daily_to_monthly_ret(df):
 def annual_ret_std(df):
     ''' input df, output annulized return and std'''
     logret = daily_ret(df)
-    annual_ret = np.nansum(logret.values)
+    annual_ret = np.nansum(logret.values / len(logret) * 252)
     annual_std = np.nanstd(logret.values) * 252 ** 0.5
     return annual_ret, annual_std
 
@@ -69,14 +69,16 @@ if __name__ == '__main__':
     )]).replace("'", "")+", axis=1, keys="+str([Ticker for Ticker in ETF_dict.keys()])+")")
     cov_matrix_daily_ret = matrix_daily_ret.cov()
     cov_matrix_monthly_ret = matrix_monthly_ret.cov()
+    corr_matrix_daily_ret = matrix_daily_ret.corr()
+    corr_matrix_monthly_ret = matrix_monthly_ret.corr()
 
     ticks = np.arange(0, len(ETF_dict), 1)
     names = list(ETF_dict.keys())
     fig = plt.figure(figsize=(14, 5))
 
     ax = fig.add_subplot(121)
-    cax = ax.matshow(cov_matrix_daily_ret, vmin=cov_matrix_daily_ret.min(
-    ).min(), vmax=cov_matrix_daily_ret.max().max())
+    cax = ax.matshow(corr_matrix_daily_ret, vmin=corr_matrix_daily_ret.min(
+    ).min(), vmax=corr_matrix_daily_ret.max().max())
     fig.colorbar(cax)
     ax.set_xticks(ticks)
     ax.set_yticks(ticks)
@@ -84,8 +86,8 @@ if __name__ == '__main__':
     ax.set_yticklabels(names)
 
     bx = fig.add_subplot(122)
-    cbx = bx.matshow(cov_matrix_monthly_ret, vmin=cov_matrix_monthly_ret.min(
-    ).min(), vmax=cov_matrix_monthly_ret.max().max())
+    cbx = bx.matshow(corr_matrix_monthly_ret, vmin=corr_matrix_monthly_ret.min(
+    ).min(), vmax=corr_matrix_monthly_ret.max().max())
     fig.colorbar(cbx)
     bx.set_xticks(ticks)
     bx.set_yticks(ticks)
@@ -106,7 +108,7 @@ if __name__ == '__main__':
     corr_roll.index = corr_roll.index.droplevel(level=1)
     corr_roll.plot()
     plt.show()
-    # corr_roll.to_csv('corr_roll.csv')
+    corr_roll.to_csv('corr_roll.csv')
     print("90-day rolling correlation is saved in 'corr_roll'\n")
     # the correlations are not stable over time
     # I think the S&P's fluctuations cause them vary
@@ -135,7 +137,7 @@ if __name__ == '__main__':
                 exec("linreg.fit(SPY_window.values.reshape(-1,1)," +
                      Ticker+"_window.values.reshape(-1,1))")
                 beta_roll.ix[i-89, Ticker] = float(linreg.coef_)
-    # beta_roll.to_csv('beta_roll.csv')
+    beta_roll.to_csv('beta_roll.csv')
     print("beta is saved in 'beta', 90-day rolling beta is saved in 'beta_roll'\n")
     # rolling 90-day's beta is not consistent over the entire period.
     # beta is not consistent with corr, because beta = corr * std(a) / std(b).
