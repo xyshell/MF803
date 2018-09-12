@@ -1,3 +1,4 @@
+import platform
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -31,7 +32,12 @@ def annual_ret_std(df):
 
 
 if __name__ == '__main__':
-    datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data\\'
+    
+    if platform.system() == 'Darwin':
+        datapath = '/Users/xieyou/GitHub/MF803/data/'
+    else:
+        datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data\\'
+    
     ETF_dict = {'SPY': 'S&P Index',
                 'XLB': 'Materials',
                 'XLE': 'Energy',
@@ -111,8 +117,10 @@ if __name__ == '__main__':
     # the correlations are not stable over time
     # I think the S&P's fluctuations cause them vary
 
-    '''For each sector ETF, compute it's  to the market using the CAPM model
-       Compute the  for the entire historical period and also rolling 90-day's'''
+    '''For each sector ETF, compute it's 
+ to the market using the CAPM model
+       Compute the 
+ for the entire historical period and also rolling 90-day's'''
     linreg = LinearRegression()
     beta = {}
     for Ticker in ETF_dict.keys():
