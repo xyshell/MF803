@@ -60,7 +60,7 @@ class Bachelier(StochasticProcess):
     
     def random_generation(self, s):
         '''input S(t-1), calculate increment'''
-        return np.random.normal(s*np.exp(self.r/252), np.sqrt(self.sigma*self.sigma*(np.exp(2*self.r/252)-1)/(2*self.r))/np.sqrt(252))
+        return np.random.normal(s*self.r/252, self.sigma/np.sqrt(252))
 
     def simulation(self, n, is_show=False):
         '''
@@ -70,7 +70,7 @@ class Bachelier(StochasticProcess):
         for i in range(n):
             price_list = [self.s0]
             for i in range(252*self.T):
-                price_list.append(self.random_generation(price_list[-1]))
+                price_list.append(price_list[-1]+self.random_generation(price_list[-1]))
             if is_show == True:
                 plt.plot(price_list)
             self.s_t.append(price_list[-1])
@@ -78,6 +78,7 @@ class Bachelier(StochasticProcess):
         if is_show == True:
             plt.show()
 
-a = Bachelier(s0 = 100, r = 0.01, sigma = 0.25, T = 1)
-a.simulation(1000,is_show=True)
-print(a.s_path)
+if __name__ == "__main__": 
+    a = Bachelier(s0 = 100, r = 0.01, sigma = 0.25, T = 1)
+    a.simulation(1000,is_show=True)
+    print(a.s_path)
