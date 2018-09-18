@@ -59,3 +59,9 @@ class  LookbackOpt(Payoff):
         elif self.pos == 'short' and self.kind == 'put':
             return -np.maximum(self.k - np.array(s_min), 0)
         
+if __name__ == '__main__':
+    a = EuropeanOpt(100, 'long', 'put')
+    from StochasticProcess import BlackScholes
+    b = BlackScholes(s0 = 100, r = 0, sigma = 0.25, T = 1)
+    b.simulation(1000)
+    print(a.payoff(b.s_path))
