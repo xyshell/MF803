@@ -2,10 +2,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class StochasticProcess(object):
-
+    ''' define a Stochastic Process, 1 day every step'''
     def __init__(self, s_t=[], s_path={}):
         self.s_t = s_t 
         self.s_path = s_path
+
+    def random_generation(self, s):
+        '''input S(t-1), calculate increment'''
+        pass
+
+    def simulation(self, n, is_show):
+        ''' 
+            use monte carlo simulation to calculate 'n' asset paths
+            is_show: draw picture of path or not, defalut is not.
+        '''
+        pass
 
 class BlackScholes(StochasticProcess):
     '''
@@ -25,10 +36,6 @@ class BlackScholes(StochasticProcess):
         self.T = T 
 
     def simulation(self, n, is_show=False):
-        '''
-            n: number of paths
-            is_show: draw picture of path or not, defalut is not.
-        '''
         for i in range(n):
             price_list = [self.s0]
             daily_returns = np.random.normal(self.r/252, self.sigma/np.sqrt(252), 252*self.T)
@@ -59,14 +66,9 @@ class Bachelier(StochasticProcess):
         self.T = T 
     
     def random_generation(self, s):
-        '''input S(t-1), calculate increment'''
         return np.random.normal(s*self.r/252, self.sigma/np.sqrt(252))
 
     def simulation(self, n, is_show=False):
-        '''
-            n: number of paths
-            is_show: draw picture of path or not, defalut is not.
-        '''
         for i in range(n):
             price_list = [self.s0]
             for i in range(252*self.T):

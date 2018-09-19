@@ -2,12 +2,19 @@ import numpy as np
 
 
 
-class Payoff(object):
-
-    def __init__(self, a = []):
-        self.a = a
+class Instrument(object):
+    '''
+        define a financial Instrument 
+    '''
+    def __init__(self):
+        pass
     
-class EuropeanOpt(Payoff):
+    def payoff(self, s_path):
+        ''' use underlying asset path to calculate payoff'''
+        pass
+
+    
+class EuropeanOpt(Instrument):
     '''
         define a European Option, input:
         pos : long or short, default is long
@@ -15,6 +22,7 @@ class EuropeanOpt(Payoff):
         k : strike price
     '''
     def __init__(self, k, pos='long', kind='call'):
+        super(EuropeanOpt, self).__init__()
         self.k =  k
         self.pos = pos 
         self.kind = kind
@@ -33,7 +41,7 @@ class EuropeanOpt(Payoff):
             return -np.maximum(self.k - np.array(s_t), 0)
 
 
-class  LookbackOpt(Payoff):
+class  LookbackOpt(Instrument):
 
     '''
         define a Lookback Option, input:
@@ -42,6 +50,7 @@ class  LookbackOpt(Payoff):
         k : strike price
     '''
     def __init__(self, k, pos='long', kind='call'):
+        super(LookbackOpt, self).__init__()
         self.k =  k
         self.pos = pos 
         self.kind = kind
