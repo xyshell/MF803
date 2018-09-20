@@ -37,7 +37,7 @@ def annual_ret_std(df):
     return annual_ret, annual_std
 
 def myhist(array):
-    ''' input array, output histgraph using Freedman-Diaconis method'''
+    ''' input array, output histograph using Freedman-Diaconis method'''
     IQR = np.percentile(array, 75) - np.percentile(array, 25)
     # Freedman-Diaconis method
     width_of_bins = 2 * IQR / pow(len(array), 1/3)

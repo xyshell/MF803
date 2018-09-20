@@ -8,14 +8,11 @@ class StochasticProcess(object):
         self.s_path = s_path
 
     def random_generation(self, s):
-        '''input S(t-1), calculate increment'''
+        print (" method not defined for base class ")
         pass
 
     def simulation(self, n, is_show):
-        ''' 
-            use monte carlo simulation to calculate 'n' asset paths
-            is_show: draw picture of path or not, defalut is not.
-        '''
+        print (" method not defined for base class ")
         pass
 
 class BlackScholes(StochasticProcess):
@@ -36,6 +33,10 @@ class BlackScholes(StochasticProcess):
         self.T = T 
 
     def simulation(self, n, is_show=False):
+        ''' 
+            use monte carlo simulation to calculate 'n' asset paths
+            is_show: draw picture of path or not, defalut is not.
+        '''
         for i in range(n):
             price_list = [self.s0]
             daily_returns = np.random.normal(self.r/252, self.sigma/np.sqrt(252), 252*self.T)
@@ -66,9 +67,14 @@ class Bachelier(StochasticProcess):
         self.T = T 
     
     def random_generation(self, s):
+        '''input S(t-1), calculate increment for St'''
         return np.random.normal(s*self.r/252, self.sigma/np.sqrt(252))
 
     def simulation(self, n, is_show=False):
+        ''' 
+            use monte carlo simulation to calculate 'n' asset paths
+            is_show: draw picture of path or not, defalut is not.
+        '''
         for i in range(n):
             price_list = [self.s0]
             for i in range(252*self.T):

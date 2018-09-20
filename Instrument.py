@@ -10,7 +10,11 @@ class Instrument(object):
         pass
     
     def payoff(self, s_path):
-        ''' use underlying asset path to calculate payoff'''
+        print (" method not defined for base class ")
+        pass
+    
+    def price_rf(self, s_path, r)
+        print (" method not defined for base class ")
         pass
 
     
@@ -28,6 +32,7 @@ class EuropeanOpt(Instrument):
         self.kind = kind
 
     def payoff(self, s_path):
+        ''' use underlying asset path to calculate payoff'''
         s_t = []
         for v in s_path.values():
             s_t = s_t.append(v[-1])
@@ -39,6 +44,10 @@ class EuropeanOpt(Instrument):
             return -np.maximum(np.array(s_t) - self.k, 0)
         elif self.pos == 'short' and self.kind == 'put':
             return -np.maximum(self.k - np.array(s_t), 0)
+    
+    def price_rf(self, s_path, r):
+        ''' calculate price using risk free discount'''
+        return np.mean(self.payoff(s_path)) / (1+r)
 
 
 class  LookbackOpt(Instrument):
@@ -56,6 +65,7 @@ class  LookbackOpt(Instrument):
         self.kind = kind
 
     def payoff(self, s_path):
+        ''' use underlying asset path to calculate payoff'''
         s_min = []
         for v in s_path.values():
             s_min.append(np.min(v))
@@ -67,6 +77,10 @@ class  LookbackOpt(Instrument):
             return -np.maximum(np.array(s_min) - self.k, 0)
         elif self.pos == 'short' and self.kind == 'put':
             return -np.maximum(self.k - np.array(s_min), 0)
+    
+    def price_rf(self, s_path, r):
+        ''' calculate price using risk free discount'''
+        return np.mean(self.payoff(s_path)) / (1+r)
         
 if __name__ == '__main__':
     a = EuropeanOpt(100, 'long', 'put')
