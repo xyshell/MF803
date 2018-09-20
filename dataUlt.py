@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd 
+import matplotlib.pyplot as plt
 
 ETF_dict = {'SPY': 'S&P Index',
             'XLB': 'Materials',
@@ -34,3 +35,12 @@ def annual_ret_std(df):
     annual_ret = np.nansum(logret.values / len(logret) * 252)
     annual_std = np.nanstd(logret.values) * 252 ** 0.5
     return annual_ret, annual_std
+
+def myhist(array):
+    ''' input array, output histgraph using Freedman-Diaconis method'''
+    IQR = np.percentile(array, 75) - np.percentile(array, 25)
+    # Freedman-Diaconis method
+    width_of_bins = 2 * IQR / pow(len(array), 1/3)
+    num_or_bins = int((max(array) - min(array)) / width_of_bins)
+    plt.hist(array, bins=num_or_bins)
+    plt.show()
