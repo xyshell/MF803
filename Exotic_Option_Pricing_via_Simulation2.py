@@ -27,9 +27,24 @@ print("Bachelier: the price of a Lookback put option with k=100 is: ")
 print(LookbackOpt_a.price_rf(Bachelier_a.s_path, Bachelier_a.r),'\n')
 
 BlackScholes_a = BlackScholes(r=0, s0=100, sigma=0.1, T=1)
-BlackScholes_a.simulation(1000,is_show=False)
+BlackScholes_a.simulation(1000)
 print("BlackScholes: the price of a Lookback put option with k=100 is: ")
 print(LookbackOpt_a.price_rf(BlackScholes_a.s_path, Bachelier_a.r),'\n')
 
+# Calculate the delta of the lookback option using fnite differences as discussed in class.
+# Try for several values of epsilon and plot the calculated delta against the choice of epsilon. 
+# Comment on what you think is the optimal value of epsilon and what values lead to the largest amounts
+# of error.
+epsilon_list = [np.power(0.1,i) for i in range(10)]
+delta_list = []
+for epsilon in epsilon_list:
+    Bachelier_u = Bachelier(r=0, s0=100+epsilon, sigma=10, T=1)
+    Bachelier_u.simulation(1000)
+    Bachelier_d = Bachelier(r=0, s0=100-epsilon, sigma=10, T=1)
+    Bachelier_d.simulation(1000)
 
+    price_u = LookbackOpt_a.price_rf(Bachelier_u.s_path, Bachelier_u.r)
+    price_d = LookbackOpt_a.price_rf(Bachelier_d.s_path, Bachelier_d.r)
+    delta_list.append((price_u - price_d) / (2 * epsilon))
 
+    

@@ -4,9 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-def import_yahoo_data(datapath, filename):
+def import_yahoo_data(path, filename):
     '''input filename(ex.SPY), output dataframe with date index'''
-    filepath = datapath + filename + '.csv'
+    filepath = path + filename + '.csv'
     df = pd.read_csv(filepath)
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index('Date', inplace=True)
@@ -34,9 +34,9 @@ def annual_ret_std(df):
 if __name__ == '__main__':
     
     if platform.system() == 'Darwin':
-        datapath = '/Users/xieyou/GitHub/MF803/data/'
+        path = '/Users/xieyou/GitHub/MF803'
     else:
-        datapath = 'C:\\Users\\47494\\GitHub\\MF803\\data\\'
+        path = 'C:\\Users\\47494\\GitHub\\MF803'
     
     ETF_dict = {'SPY': 'S&P Index',
                 'XLB': 'Materials',
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     '''read data'''
     for Ticker in ETF_dict.keys():
-        exec(Ticker+" = import_yahoo_data(datapath, '"+Ticker+"')")
+        exec(Ticker+" = import_yahoo_data(path, '"+Ticker+"')")
     print("data has been downloaded to file 'data'\n")
 
     '''Calculate the annualized return and standard deviation of ETFs'''
@@ -74,8 +74,9 @@ if __name__ == '__main__':
     cov_matrix_daily_ret = matrix_daily_ret.cov()
     cov_matrix_monthly_ret = matrix_monthly_ret.cov()
     corr_matrix_daily_ret = matrix_daily_ret.corr()
+    # corr_matrix_daily_ret.to_csv('ETFs_corr_daily.csv')
     corr_matrix_monthly_ret = matrix_monthly_ret.corr()
-
+    # corr_matrix_monthly_ret.to_csv('ETFs_corr_monthly.csv')
     ticks = np.arange(0, len(ETF_dict), 1)
     names = list(ETF_dict.keys())
     fig = plt.figure(figsize=(14, 5))

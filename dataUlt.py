@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd 
+import platform
 import matplotlib.pyplot as plt
 
 ETF_dict = {'SPY': 'S&P Index',
@@ -13,9 +14,23 @@ ETF_dict = {'SPY': 'S&P Index',
             'XLV': 'Healthcare',
             'XLY': 'Consumer Discretionary'}
 
-def import_yahoo_data(datapath, filename):
-    '''input filename(ex.SPY), output dataframe with date index'''
-    filepath = datapath + filename + '.csv'
+def import_yahoo_data(path, filename):
+    '''input filename(ex.SPY), output df with date index'''
+    if platform.system() == 'Darwin':
+        filepath = path + '/data/' + filename + '.csv'
+    else:
+        filepath = path + '\\data\\' + filename + '.csv'
+    df = pd.read_csv(filepath)
+    df['Date'] = pd.to_datetime(df['Date'])
+    df.set_index('Date', inplace=True)
+    return df
+
+def import_fama_data(path, filename):
+    '''input filename(ex.Fama_French_Three_Factors_Daily, output df with index)'''
+    if platform.system() == 'Darwin':
+        filepath = path + '/data/' + filename + '.csv'
+    else:
+        filepath = path + '\\data\\' + filename + '.csv'
     df = pd.read_csv(filepath)
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index('Date', inplace=True)

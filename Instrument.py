@@ -13,7 +13,7 @@ class Instrument(object):
         print (" method not defined for base class ")
         pass
     
-    def price_rf(self, s_path, r)
+    def price_rf(self, s_path, r):
         print (" method not defined for base class ")
         pass
 
