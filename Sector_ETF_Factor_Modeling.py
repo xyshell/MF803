@@ -16,6 +16,9 @@ three_factors = import_fama_data(path, 'Fama_French_Three_Factors_Daily')
 # (b)
 three_factors_cov = three_factors.cov()
 three_factors_corr = three_factors.corr()
+print(three_factors_corr)
+print('These factors are not correlated')
+
 if platform.system() == 'Darwin':
     ETF_corr = pd.read_csv(path + '/result/ ' +'ETFs_corr_daily.csv')
 else:
