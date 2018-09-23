@@ -31,7 +31,7 @@ def import_fama_data(path, filename):
         filepath = path + '/data/' + filename + '.csv'
     else:
         filepath = path + '\\data\\' + filename + '.csv'
-    df = pd.read_csv(filepath)
+    df = pd.read_csv(filepath, header=3)
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index('Date', inplace=True)
     return df

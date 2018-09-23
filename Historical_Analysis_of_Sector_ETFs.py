@@ -3,15 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-
-def import_yahoo_data(path, filename):
-    '''input filename(ex.SPY), output dataframe with date index'''
-    filepath = path + filename + '.csv'
-    df = pd.read_csv(filepath)
-    df['Date'] = pd.to_datetime(df['Date'])
-    df.set_index('Date', inplace=True)
-    return df
-
+from dataUlt import import_yahoo_data
 
 def daily_ret(df):
     '''input df, output series of daily log return'''
@@ -113,7 +105,7 @@ if __name__ == '__main__':
     corr_roll.index = corr_roll.index.droplevel(level=1)
     corr_roll.plot()
     plt.show()
-    corr_roll.to_csv('corr_roll.csv')
+    # corr_roll.to_csv('corr_roll.csv')
     print("90-day rolling correlation is saved in 'corr_roll'\n")
     # the correlations are not stable over time
     # I think the S&P's fluctuations cause them vary
@@ -144,7 +136,7 @@ if __name__ == '__main__':
                 exec("linreg.fit(SPY_window.values.reshape(-1,1)," +
                      Ticker+"_window.values.reshape(-1,1))")
                 beta_roll.ix[i-89, Ticker] = float(linreg.coef_)
-    beta_roll.to_csv('beta_roll.csv')
+    # beta_roll.to_csv('beta_roll.csv')
     print("beta is saved in 'beta', 90-day rolling beta is saved in 'beta_roll'\n")
     # rolling 90-day's beta is not consistent over the entire period.
     # beta is not consistent with corr, because beta = corr * std(a) / std(b).
