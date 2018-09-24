@@ -25,15 +25,18 @@ def import_yahoo_data(path, filename):
     df.set_index('Date', inplace=True)
     return df
 
-def import_fama_data(path, filename):
+def import_fama_data(filename):
     '''input filename(ex.Fama_French_Three_Factors_Daily, output df with index)'''
     if platform.system() == 'Darwin':
-        filepath = path + '/data/' + filename + '.csv'
+        path = '/Users/xieyou/GitHub/MF803'
+        filepath = path + '/data/' + filename
     else:
-        filepath = path + '\\data\\' + filename + '.csv'
+        path = 'C:\\Users\\47494\\GitHub\\MF803'
+        filepath = path + '\\data\\' + filename
     df = pd.read_csv(filepath, header=1, names=['Date','Mkt-RF','SMB','HML','RF'])
-    df['Date'] = pd.to_datetime(df['Date'])
+    df['Date'] = pd.to_datetime(df['Date'].astype(str))
     df.set_index('Date', inplace=True)
+    df = df / 100
     return df
 
 def daily_ret(df):
@@ -59,3 +62,12 @@ def myhist(array):
     num_or_bins = int((max(array) - min(array)) / width_of_bins)
     plt.hist(array, bins=num_or_bins)
     plt.show()
+
+def get_result(filename):
+    if platform.system() == 'Darwin':
+        path = '/Users/xieyou/GitHub/MF803'
+        df = pd.read_csv(path + '/result/' + filename)
+    else:
+        path = 'C:\\Users\\47494\\GitHub\\MF803'
+        df = pd.read_csv(path + '\\result\\' + filename)
+    return df

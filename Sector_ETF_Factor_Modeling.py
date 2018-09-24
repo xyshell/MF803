@@ -2,63 +2,99 @@ import platform
 import numpy as np
 import pandas as pd
 from statsmodels.graphics.gofplots import qqplot
+from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
-from dataUlt import import_fama_data, ETF_dict
+from dataUlt import import_fama_data, get_result, ETF_dict
 
 # (a)
-if platform.system() == 'Darwin':
-    path = '/Users/xieyou/GitHub/MF803'
-else:
-    path = 'C:\\Users\\47494\\GitHub\\MF803'
-
-three_factors = import_fama_data(path, 'Fama_French_Three_Factors_Daily')
+three_factors = import_fama_data('Fama_French_Three_Factors_Daily.csv')
+del three_factors['RF']
 
 # (b)
 three_factors_cov = three_factors.cov()
 three_factors_corr = three_factors.corr()
 print(three_factors_corr)
 print('These factors are not correlated')
-
-if platform.system() == 'Darwin':
-    ETF_corr = pd.read_csv(path + '/result/ ' +'ETFs_corr_daily.csv')
-else:
-    ETF_corr = pd.read_csv(path + '\\result\\ ' +'ETFs_corr_daily.csv')
+ETF_corr = get_result('ETF_daily_corr.csv')
+print('By comparing to the correlation of ETFs, These factors are less correlated')
 
 # (c)
 three_factors_corr_roll = three_factors.rolling(window=90).corr()
-if platform.system() == 'Darwin':
-    ETF_corr_roll = pd.read_csv(path + '/result/ ' +'corr_roll.csv')
-else:
-    ETF_corr_roll = pd.read_csv(path + '\\result\\ ' +'corr_roll.csv')
+three_factors_corr_roll.dropna(axis=0, how='any', inplace=True)
+loc1 = three_factors_corr_roll.index.get_level_values(1) == 'Mkt-RF'
+df1 = three_factors_corr_roll[loc1][['SMB']] # Mkt-RF and SMB
+df2 = three_factors_corr_roll[loc1][['HML']] # Mkt-RF and HML
+loc2 = three_factors_corr_roll.index.get_level_values(1) == 'SMB'
+df3 = three_factors_corr_roll[loc2][['HML']] # SMB and HML
+
+three_factors_corr_roll = pd.DataFrame(
+    data=np.hstack((df1.values,df2.values,df3.values)),
+    index=df1.index.droplevel(level=1),
+    columns=['Mkt-RF and SMB', 'Mkt-RF and HML', 'SMB and HML'])
+
+ETF_corr_roll = get_result('ETF_daily_corr_roll.csv')
+print("the three_factors_corr_roll is not stable over time.\n" +
+    "there's no evidence that they are more stable than ETF.")
 
 # (d)
-qqplot(np.array(three_factors['mkt'].values))
-qqplot(np.array(three_factors['smb'].values))
-qqplot(np.array(three_factors['hml'].values))
+fig = plt.figure(figsize=(20,5))
+fig.suptitle('Qqplot Normal Test',fontsize=15)
+ax1 = plt.subplot(131)
+ax1.set_title('Mkt-RF')
+qqplot(three_factors['Mkt-RF'].values, ax=ax1)
+ax2 = plt.subplot(132)
+ax2.set_title('SMB')
+qqplot(three_factors['SMB'].values, ax=ax2)
+ax3 = plt.subplot(133)
+ax3.set_title('HML')
+qqplot(three_factors['HML'].values, ax=ax3)
+plt.show()
 
 # (e)
-linreg = LinearRegression()
-beta = {}
-for Ticker in ETF_dict.keys():
-    exec("linreg.fit(SPY_daily_ret.values.reshape(-1,1)," +
-            Ticker+"_daily_ret.values.reshape(-1,1))")
-    beta[Ticker] = float(linreg.coef_)
+ETF_ret = get_result('ETF_daily_ret.csv')
+ETF_ret['Date'] = pd.to_datetime(ETF_ret['Date'])
+ETF_ret.set_index('Date', inplace=True)
+fama_model = ETF_ret.merge(three_factors,left_index=True, right_index=True)
 
+linreg0 = LinearRegression()
+linreg0.fit(fama_model[['Mkt-RF','SMB','HML']].values,fama_model[[i for i in ETF_dict.keys()]].values)
+beta = dict(zip(ETF_dict.keys(), linreg0.coef_[:,0]))
+
+linreg1 = LinearRegression()
 beta_roll = pd.DataFrame()
-for Ticker in ETF_dict.keys():
-    for i in range(89, len(SPY_daily_ret), 1):
-        SPY_window = SPY_daily_ret.iloc[i-89:i]
-        exec(Ticker+"_window = "+Ticker+"_daily_ret.iloc[i-89:i]")
-        exec("linreg.fit(SPY_window.values.reshape(-1,1)," +
-                Ticker+"_window.values.reshape(-1,1))")
-        beta_roll.ix[i-89, Ticker] = float(linreg.coef_)
+for i in range(89, len(fama_model), 1):
+    fama_model_window = fama_model.iloc[i-89:i]
+    linreg1.fit(fama_model_window[['Mkt-RF','SMB','HML']].values,fama_model_window[[x for x in ETF_dict.keys()]].values)
+    beta_temp = pd.DataFrame(linreg1.coef_[:,0].reshape(-1,10), columns = [x for x in ETF_dict.keys()], index = [fama_model_window.index[-1]])
+    beta_roll = pd.concat([beta_roll, beta_temp])
+
+print("these's little evidence showing beta gets more consistant," + 
+    "while it somewhat gets more 'compact'")
 
 # (f)
-return_real = None
-return_pred = None
-residual = return_real - return_pred
-print('mean of residual is: ', np.mean(residual), '\n')
-print('variance of residual is: ', np.var(residual), '\n')
-qqplot((residual.values))
+residual = pd.DataFrame({})
+for i in range(len(ETF_dict)):
+    pred_ret = (linreg0.coef_[i] * fama_model[['Mkt-RF','SMB','HML']]).sum(axis=1)
+    real_ret = fama_model.iloc[:,i]
+    residual_temp = real_ret - pred_ret
+    residual[list(ETF_dict.keys())[i]] = residual_temp
+print("mean of residual is: \n",residual.mean(axis=0),'\n')
+print("var of residual is: \n",residual.var(axis=0),'\n')
+
+fig = plt.figure(figsize=(20,40))
+for i in range(len(ETF_dict)-1):
+    exec("ax"+str(i+1)+" = plt.subplot(33"+str(i+1)+")")
+    exec("ax"+str(i+1)+".set_title(list(ETF_dict.keys())["+str(i)+"])")
+    exec("qqplot(residual[list(ETF_dict.keys())["+str(i)+"]].values, ax=ax"+str(i+1)+")")
+plt.show()
+
+print("the residual appears to be normal, which supports the model at some extent.\n")
+print("Also, one could test whether residual is auto-correlated.\n")
+print("the auto-correlation of the residual of each ETF is:\n")
+
+for i in range(len(ETF_dict)):
+    print(list(ETF_dict.keys())[i], ' : ', residual.iloc[:,i].autocorr(lag=1))
+
+print("\nexcept SPY, the result of others supports the assumption of OLS.")
 
 # Autocorrelation, Heteroscedastic
