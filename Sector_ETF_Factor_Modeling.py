@@ -34,7 +34,7 @@ three_factors_corr_roll = pd.DataFrame(
 
 ETF_corr_roll = get_result('ETF_daily_corr_roll.csv')
 print("the three_factors_corr_roll is not stable over time.\n" +
-    "there's no evidence that they are more stable than ETF.")
+    "there's no evidence that they are more stable than ETF.\n")
 
 # (d)
 fig = plt.figure(figsize=(20,5))
@@ -59,6 +59,7 @@ fama_model = ETF_ret.merge(three_factors,left_index=True, right_index=True)
 linreg0 = LinearRegression()
 linreg0.fit(fama_model[['Mkt-RF','SMB','HML']].values,fama_model[[i for i in ETF_dict.keys()]].values)
 beta = dict(zip(ETF_dict.keys(), linreg0.coef_[:,0]))
+print("beta for the entire historical period is: \n", beta)
 
 linreg1 = LinearRegression()
 beta_roll = pd.DataFrame()
@@ -67,7 +68,6 @@ for i in range(89, len(fama_model), 1):
     linreg1.fit(fama_model_window[['Mkt-RF','SMB','HML']].values,fama_model_window[[x for x in ETF_dict.keys()]].values)
     beta_temp = pd.DataFrame(linreg1.coef_[:,0].reshape(-1,10), columns = [x for x in ETF_dict.keys()], index = [fama_model_window.index[-1]])
     beta_roll = pd.concat([beta_roll, beta_temp])
-
 print("these's little evidence showing beta gets more consistant," + 
     "while it somewhat gets more 'compact'")
 
@@ -94,7 +94,6 @@ print("the auto-correlation of the residual of each ETF is:\n")
 
 for i in range(len(ETF_dict)):
     print(list(ETF_dict.keys())[i], ' : ', residual.iloc[:,i].autocorr(lag=1))
-
 print("\nexcept SPY, the result of others supports the assumption of OLS.")
 
 # Autocorrelation, Heteroscedastic
