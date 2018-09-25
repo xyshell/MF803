@@ -5,7 +5,7 @@ from StochasticProcess import BlackScholes, Bachelier
 from Instrument import LookbackOpt
 from dataUlt import myhist
 
-Bachelier_a = Bachelier(r=0, s0=100, sigma=0.1, T=1)
+Bachelier_a = Bachelier(r=0, s0=100, sigma=10.0, T=1)
 
 # (a) Generate a series of normally distributed random numbers and use these to generate
 # simulated paths for the underlying asset.   

@@ -95,5 +95,3 @@ print("the auto-correlation of the residual of each ETF is:\n")
 for i in range(len(ETF_dict)):
     print(list(ETF_dict.keys())[i], ' : ', residual.iloc[:,i].autocorr(lag=1))
 print("\nexcept SPY, the result of others supports the assumption of OLS.")
-
-# Autocorrelation, Heteroscedastic
