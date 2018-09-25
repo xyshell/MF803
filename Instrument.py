@@ -1,7 +1,5 @@
 import numpy as np 
 
-
-
 class Instrument(object):
     '''
         define a financial Instrument 
@@ -17,7 +15,6 @@ class Instrument(object):
         print (" method not defined for base class ")
         pass
 
-    
 class EuropeanOpt(Instrument):
     '''
         define a European Option, input:
@@ -48,7 +45,6 @@ class EuropeanOpt(Instrument):
     def price_rf(self, s_path, r):
         ''' calculate price using risk free discount'''
         return np.mean(self.payoff(s_path)) / (1+r)
-
 
 class  LookbackOpt(Instrument):
 

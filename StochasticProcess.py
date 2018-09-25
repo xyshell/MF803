@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 class StochasticProcess(object):
     ''' define a Stochastic Process, 1 day every step'''
     def __init__(self, s_t=[], s_path={}):
-        self.s_t = s_t 
+        self.s_t = s_t
         self.s_path = s_path
 
     def random_generation(self, s):
@@ -39,7 +39,8 @@ class BlackScholes(StochasticProcess):
         '''
         for i in range(n):
             price_list = [self.s0]
-            daily_returns = np.random.normal(self.r/252, self.sigma/np.sqrt(252), 252*self.T)
+            daily_returns = np.random.normal(self.r/252, 
+                self.sigma/np.sqrt(252), 252*self.T)
             for x in daily_returns:
                 price_list.append(price_list[-1]*(x+1))
             if is_show == True:
@@ -59,12 +60,13 @@ class Bachelier(StochasticProcess):
         T: time range(year)
     '''
 
-    def __init__(self, s0, r, sigma, T, s_t=[], s_path={}):
-        super(Bachelier, self).__init__(s_t, s_path)
+    def __init__(self, s0, r, sigma, T, s_t=[], s_path={}, s_delta={}):
+        StochasticProcess.__init__(self, s_t, s_path)
         self.s0 = s0 
         self.r = r 
         self.sigma = sigma 
         self.T = T 
+        self.s_delta = s_delta
     
     def random_generation(self, s):
         '''input S(t-1), calculate increment for St'''
@@ -75,16 +77,32 @@ class Bachelier(StochasticProcess):
             use monte carlo simulation to calculate 'n' asset paths
             is_show: draw picture of path or not, defalut is not.
         '''
-        for i in range(n):
-            price_list = [self.s0]
-            for i in range(252*self.T):
-                price_list.append(price_list[-1]+self.random_generation(price_list[-1]))
-            if is_show == True:
-                plt.plot(price_list)
-            self.s_t.append(price_list[-1])
-            self.s_path[i] = price_list
+        if self.s_delta != {}:
+            for i in range(n):
+                price_list = [self.s0]
+                for j in range(252*self.T):
+                    price_delta = self.s_delta[i][j]
+                    price_list.append(price_list[-1]+price_delta)
+                if is_show == True:
+                    plt.plot(price_list)
+                self.s_t.append(price_list[-1])
+                self.s_path[i] = price_list
+        else:
+            for i in range(n):
+                price_list = [self.s0]
+                s_delta_temp = []
+                for j in range(252*self.T):
+                    price_delta = self.random_generation(price_list[-1])
+                    price_list.append(price_list[-1]+price_delta)
+                    s_delta_temp.append(price_delta)
+                if is_show == True:
+                    plt.plot(price_list)
+                self.s_t.append(price_list[-1])
+                self.s_path[i] = price_list
+                self.s_delta[i] = s_delta_temp
         if is_show == True:
             plt.show()
+
 
 if __name__ == "__main__": 
     a = Bachelier(s0 = 100, r = 0.01, sigma = 0.25, T = 1)
