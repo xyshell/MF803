@@ -25,6 +25,7 @@ Q1: Sector_ETF_Factor_Modeling.py
     and edit the path to adapt to your environment. 
     Then run the file, it takes about 10 plus seconds, 
     answers to each question are printed out and pictures are drawn.
+    Important tables are saved in 'result'
 
 Q2: Exotic_Option_Pricing_via_Simulation2.py
 
