@@ -64,6 +64,8 @@ def myhist(array):
     plt.show()
 
 def get_result(filename):
+    '''This function is to use csv file in 'result' folder '''
+
     if platform.system() == 'Darwin':
         path = '/Users/xieyou/GitHub/MF803'
         df = pd.read_csv(path + '/result/' + filename)
