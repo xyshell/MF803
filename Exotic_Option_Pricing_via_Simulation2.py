@@ -51,19 +51,3 @@ print("the value of delta remains more stable and precise " +
     "when epsilon ranges from 0.1^3 to 0.1^9.\n" + 
     "when epsilon <=0.1^14, errors occurs, " +
     "and epsilon <= 0.1^15 leads to the largest amounts of error.")
-
-'''
-Question: 
-epsilon_list = [np.power(0.1,i) for i in range(10)]
-delta_list = []
-for epsilon in epsilon_list:
-    Bachelier_u = Bachelier(r=0, s0=100+epsilon, sigma=10.0, T=1)
-    Bachelier_u.simulation(1000)
-    price_u = LookbackOpt_a.price_rf(Bachelier_u.s_path, Bachelier_u.r)
-    Bachelier_d = Bachelier(r=0, s0=100-epsilon, sigma=10.0, T=1, s_delta=Bachelier_u.s_delta)
-    Bachelier_d.simulation(1000)
-    price_d = LookbackOpt_a.price_rf(Bachelier_d.s_path, Bachelier_d.r)
-
-    delta_list.append((price_u - price_d) / (2 * epsilon))
-print(delta_list)
-'''
