@@ -21,7 +21,7 @@ Problem_set2:
 
 Q1: Sector_ETF_Factor_Modeling.py
 
-    Before you run, go to function import_fama_data() in dataUlt.py,
+    Before you run, go to function import_fama_data() and get_result() in dataUlt.py,
     and edit the path to adapt to your environment. 
     Then run the file, it takes about 10 plus seconds, 
     answers to each question are printed out and pictures are drawn.
