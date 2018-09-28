@@ -14,12 +14,14 @@ ETF_dict = {'SPY': 'S&P Index',
             'XLV': 'Healthcare',
             'XLY': 'Consumer Discretionary'}
 
-def import_yahoo_data(path, filename):
-    '''input filename(ex.SPY), output df with date index'''
+def import_yahoo_data(filename):
+    '''input filename(ex.'SPY.csv'), output df with date index'''
     if platform.system() == 'Darwin':
-        filepath = path + '/data/' + filename + '.csv'
+        path = '/Users/xieyou/GitHub/MF803'
+        filepath = path + '/data/' + filename
     else:
-        filepath = path + '\\data\\' + filename + '.csv'
+        path = 'C:\\Users\\47494\\GitHub\\MF803'
+        filepath = path + '\\data\\' + filename
     df = pd.read_csv(filepath)
     df['Date'] = pd.to_datetime(df['Date'])
     df.set_index('Date', inplace=True)
