@@ -32,3 +32,9 @@ Q2: Exotic_Option_Pricing_via_Simulation2.py
     Just run the file, it takes about 10 plus seconds,
     answers to each question are printed out and pictures are drawn.
 
+Problem_set3:
+
+Q1: Volatility_Experiments.py
+
+    before you run, edit import_yahoo_data() path in dataUlt.py.
+    Then run the code, the answers are printed out and picutures are drawn.
