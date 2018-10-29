@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     '''read data'''
     for Ticker in ETF_dict.keys():
-        exec(Ticker+" = import_yahoo_data(path, '"+Ticker+"')")
+        exec(Ticker+" = import_yahoo_data('"+Ticker+".csv')")
     print("data has been downloaded to file 'data'\n")
 
     '''Calculate the annualized return and standard deviation of ETFs'''
