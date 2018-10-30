@@ -4,6 +4,7 @@ from sympy import solve, exp
 from sympy import Symbol
 
 def swap2spot(swap_rate_structure, freq=0.5):
+    '''deduce spot structure from swap structure'''
     spot_rate_structure = dict.fromkeys(swap_rate_structure)
     par_value = 100
     for key in spot_rate_structure.keys():
@@ -22,6 +23,7 @@ def swap2spot(swap_rate_structure, freq=0.5):
     return spot_rate_structure
 
 def spot2for(spot_rate_structure):
+    '''deduce forward structure from spot structure'''
     forward_rate_structure = dict()
     i = 0
     for key in spot_rate_structure.keys():
@@ -46,6 +48,7 @@ def spot2for(spot_rate_structure):
     return forward_rate_structure
 
 def for2spot(forward_rate_structure):
+    '''deduce spot structure from forward structure'''
     spot_rate_structure = dict()
     for key in forward_rate_structure.keys():
         newkey = key.split('_')[1]
@@ -66,6 +69,7 @@ def for2spot(forward_rate_structure):
     return spot_rate_structure
 
 def find_disc_fact(T, spot_rate_structure, forward_rate_structure):
+    '''get discount factor from spot & forward structure'''
     t = int(re.findall('\d+',T)[0])
     interval = None
     if T in spot_rate_structure:
@@ -84,6 +88,7 @@ def find_disc_fact(T, spot_rate_structure, forward_rate_structure):
         return s_t
 
 def find_swap_rate(T, disc_fact, freq=0.5):
+    '''get swap rate with T & disc_fact'''
     t = int(re.findall('\d+',T)[0])
     par_value = 100
     x = Symbol('x', real=True)
@@ -99,38 +104,40 @@ def find_swap_rate(T, disc_fact, freq=0.5):
     return swap_rate_t/100
 
 def spot2swap(spot_rate_structure, freq=0.5):
+    '''deduce swap structure from spot structure'''
     swap_rate_structure = dict.fromkeys(spot_rate_structure)
     for key in swap_rate_structure.keys():
         swap_rate_structure[key] = find_swap_rate(key, spot_rate_structure[key])
     return swap_rate_structure
 
-swap_rate_structure = {'1Y':0.028438, '2Y':0.03060, 
-    '3Y':0.03126,'4Y':0.03144, '5Y':0.03150, 
-    '7Y':0.03169, '10Y':0.03210, '30Y':0.03237}
+if __name__ == "__main__": 
+    swap_rate_structure = {'1Y':0.028438, '2Y':0.03060, 
+        '3Y':0.03126,'4Y':0.03144, '5Y':0.03150, 
+        '7Y':0.03169, '10Y':0.03210, '30Y':0.03237}
 
-spot_rate_structure = swap2spot(swap_rate_structure)
-forward_rate_structure = spot2for(spot_rate_structure)
-s_15 = find_disc_fact('15Y', spot_rate_structure, forward_rate_structure)
-swap_rate_15 =  find_swap_rate('15Y', s_15)
+    spot_rate_structure = swap2spot(swap_rate_structure)
+    forward_rate_structure = spot2for(spot_rate_structure)
+    s_15 = find_disc_fact('15Y', spot_rate_structure, forward_rate_structure)
+    swap_rate_15 =  find_swap_rate('15Y', s_15)
 
-# shift forward rates up 100 basis points
-forward_rate_structure_u = dict.fromkeys(forward_rate_structure)
-for key, value in forward_rate_structure.items():
-    forward_rate_structure_u[key] = forward_rate_structure[key] + 0.01
-spot_rate_structure_u = for2spot(forward_rate_structure_u)
-swap_rate_structure_u = spot2swap(spot_rate_structure_u)
+    # shift forward rates up 100 basis points
+    forward_rate_structure_u = dict.fromkeys(forward_rate_structure)
+    for key, value in forward_rate_structure.items():
+        forward_rate_structure_u[key] = forward_rate_structure[key] + 0.01
+    spot_rate_structure_u = for2spot(forward_rate_structure_u)
+    swap_rate_structure_u = spot2swap(spot_rate_structure_u)
 
-# shift swap rate (1):
-swap_rate_structure_1 = {'1Y':0.028438, '2Y':0.03060, 
-    '3Y':0.03126,'4Y':0.03194, '5Y':0.03250, 
-    '7Y':0.03319, '10Y': 0.03460, '30Y':0.03737}
-spot_rate_structure_1 = swap2spot(swap_rate_structure_1)
-forward_rate_structure_1 = spot2for(spot_rate_structure_1)
+    # shift swap rate (1):
+    swap_rate_structure_1 = {'1Y':0.028438, '2Y':0.03060, 
+        '3Y':0.03126,'4Y':0.03194, '5Y':0.03250, 
+        '7Y':0.03319, '10Y': 0.03460, '30Y':0.03737}
+    spot_rate_structure_1 = swap2spot(swap_rate_structure_1)
+    forward_rate_structure_1 = spot2for(spot_rate_structure_1)
 
-# shift swap rate (2):
-swap_rate_structure_2 = {'1Y':0.023438, '2Y':0.0281, 
-    '3Y':0.02976,'4Y':0.03044, '5Y':0.03100, 
-    '7Y':0.03169, '10Y':0.03210, '30Y':0.03237}
-spot_rate_structure_2 = swap2spot(swap_rate_structure_2)
-forward_rate_structure_2 = spot2for(spot_rate_structure_2)
+    # shift swap rate (2):
+    swap_rate_structure_2 = {'1Y':0.023438, '2Y':0.0281, 
+        '3Y':0.02976,'4Y':0.03044, '5Y':0.03100, 
+        '7Y':0.03169, '10Y':0.03210, '30Y':0.03237}
+    spot_rate_structure_2 = swap2spot(swap_rate_structure_2)
+    forward_rate_structure_2 = spot2for(spot_rate_structure_2)
 
