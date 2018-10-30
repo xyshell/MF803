@@ -13,63 +13,124 @@ def swap2spot(swap_rate_structure, freq=0.5):
         sum = 0
         for i in range(1,int(T/freq)+1):
             if i != T/freq:
-                a = swap_rate * freq * exp(-i*freq*x)
+                a = par_value * swap_rate * freq * exp(-i*freq*x)
                 sum = sum + a 
             else:
-                a = (swap_rate * freq + par_value) * exp(-i*freq*x)
+                a = (par_value * swap_rate * freq + par_value) * exp(-i*freq*x)
                 sum = sum + a 
         spot_rate_structure[key] = float(solve(sum - par_value, x)[0])
     return spot_rate_structure
 
 def spot2for(spot_rate_structure):
-    forward_rate_structrue = dict()
+    forward_rate_structure = dict()
     i = 0
     for key in spot_rate_structure.keys():
         if i == 0:
             key0 = '0Y'
             i = i + 1
         newkey = key0+'_'+key
-        forward_rate_structrue[newkey] = None
+        forward_rate_structure[newkey] = None
         key0 = key
-    for key in forward_rate_structrue.keys():
+    for key in forward_rate_structure.keys():
         A, B = key.split('_')
         a = int(re.findall('\d+',A)[0])
         b = int(re.findall('\d+',B)[0])
         if a == 0:
-            forward_rate_structrue[key] = spot_rate_structure[B]
+            forward_rate_structure[key] = spot_rate_structure[B]
             continue
         # f_a_b: forward rate from a to b
         s_a = spot_rate_structure[A]
         s_b = spot_rate_structure[B] 
         f_a_b = (s_b * b  - s_a * a) / (b - a)
-        forward_rate_structrue[key] = f_a_b
-    return forward_rate_structrue
+        forward_rate_structure[key] = f_a_b
+    return forward_rate_structure
 
-# TODO: find swap rate at t=15Y 
-# def find_swap_rate(spot_rate_structure, t, freq=0.5):
-#     par_value = 100
-#     x = Symbol('x', real=True)
-#     sum = 0
-#     for i in range(1,int(t/freq)+1):
-#     if i != T/freq:
-#         a = swap_rate * freq * exp(-i*freq*x)
-#         sum = sum + a 
-#     else:
-#         a = (swap_rate * freq + par_value) * exp(-i*freq*x)
-#         sum = sum + a 
-#     spot_rate_structure[key] = float(solve(sum - par_value, x)[0])
-#     return swap_rate_t
+def for2spot(forward_rate_structure):
+    spot_rate_structure = dict()
+    for key in forward_rate_structure.keys():
+        newkey = key.split('_')[1]
+        spot_rate_structure[newkey] = None
+    i = 0 
+    for key in forward_rate_structure.keys():
+        A, B = key.split('_')
+        a = int(re.findall('\d+',A)[0])
+        b = int(re.findall('\d+',B)[0])
+        if a == 0:
+            spot_rate_structure[B] = forward_rate_structure[key]
+            continue
+        # f_a_b: forward rate from a to b
+        f_a_b = forward_rate_structure[key]
+        s_a = spot_rate_structure[A]
+        s_b =  (f_a_b * (b - a) + s_a * a) / b 
+        spot_rate_structure[B] = s_b
+    return spot_rate_structure
 
-swap_rate_structure = {'1Y':2.8438, '2Y':3.060, 
-    '3Y':3.126,'4Y':3.144, '5Y':3.150, 
-    '7Y':3.169, '10Y': 3.210, '30Y':3.237}
-# spot_rate_structure = {'1Y':2.824, '2Y':3.037,
-#     '3Y':3.102,'4Y':3.120, '5Y':3.125,
-#     '7Y':3.144, '10Y':3.185, '30Y':3.211}
-par_value = 100
+def find_disc_fact(T, spot_rate_structure, forward_rate_structure):
+    t = int(re.findall('\d+',T)[0])
+    interval = None
+    if T in spot_rate_structure:
+        return spot_rate_structure[T]
+    else:
+        for key, value in forward_rate_structure.items():
+            A, B = key.split('_')
+            a = int(re.findall('\d+',A)[0])
+            b = int(re.findall('\d+',B)[0])
+            if t > a and t < b:
+                interval = key
+                break 
+        f_a_t = forward_rate_structure[interval]
+        s_a = spot_rate_structure[A]
+        s_t = (f_a_t*(t-a) +  s_a * a) / t
+        return s_t
+
+def find_swap_rate(T, disc_fact, freq=0.5):
+    t = int(re.findall('\d+',T)[0])
+    par_value = 100
+    x = Symbol('x', real=True)
+    sum = 0
+    for i in range(1,int(t/freq)+1):
+        if i != t/freq:
+            a = x * freq * exp(-i*freq*disc_fact)
+            sum = sum + a 
+        else:
+            a = (x * freq + par_value) * exp(-i*freq*disc_fact)
+            sum = sum + a 
+    swap_rate_t = float(solve(sum - par_value, x)[0])
+    return swap_rate_t/100
+
+def spot2swap(spot_rate_structure, freq=0.5):
+    swap_rate_structure = dict.fromkeys(spot_rate_structure)
+    for key in swap_rate_structure.keys():
+        swap_rate_structure[key] = find_swap_rate(key, spot_rate_structure[key])
+    return swap_rate_structure
+
+swap_rate_structure = {'1Y':0.028438, '2Y':0.03060, 
+    '3Y':0.03126,'4Y':0.03144, '5Y':0.03150, 
+    '7Y':0.03169, '10Y':0.03210, '30Y':0.03237}
+
 spot_rate_structure = swap2spot(swap_rate_structure)
-forward_rate_structrue = spot2for(spot_rate_structure)
+forward_rate_structure = spot2for(spot_rate_structure)
+s_15 = find_disc_fact('15Y', spot_rate_structure, forward_rate_structure)
+swap_rate_15 =  find_swap_rate('15Y', s_15)
 
-# forward_rate_structrue = dict.fromkeys(swap_rate_structure)
-for key, value in forward_rate_structrue.items():
-    print(key, value)
+# shift forward rates up 100 basis points
+forward_rate_structure_u = dict.fromkeys(forward_rate_structure)
+for key, value in forward_rate_structure.items():
+    forward_rate_structure_u[key] = forward_rate_structure[key] + 0.01
+spot_rate_structure_u = for2spot(forward_rate_structure_u)
+swap_rate_structure_u = spot2swap(spot_rate_structure_u)
+
+# shift swap rate (1):
+swap_rate_structure_1 = {'1Y':0.028438, '2Y':0.03060, 
+    '3Y':0.03126,'4Y':0.03194, '5Y':0.03250, 
+    '7Y':0.03319, '10Y': 0.03460, '30Y':0.03737}
+spot_rate_structure_1 = swap2spot(swap_rate_structure_1)
+forward_rate_structure_1 = spot2for(spot_rate_structure_1)
+
+# shift swap rate (2):
+swap_rate_structure_2 = {'1Y':0.023438, '2Y':0.0281, 
+    '3Y':0.02976,'4Y':0.03044, '5Y':0.03100, 
+    '7Y':0.03169, '10Y':0.03210, '30Y':0.03237}
+spot_rate_structure_2 = swap2spot(swap_rate_structure_2)
+forward_rate_structure_2 = spot2for(spot_rate_structure_2)
+
