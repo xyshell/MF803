@@ -11,8 +11,9 @@ del matrix_daily_ret['SPY']
 cov_matrix_daily_ret = matrix_daily_ret.cov()
 w,v = np.linalg.eig(cov_matrix_daily_ret.values)
 w_sort = np.array(sorted(w,reverse=True))
+# TODO:add title, label
 plt.plot(w_sort, markersize=12, marker='o')
-# plt.show()
+plt.show()
 print(sum(w_sort > 0), 'eigenvalues are positive')
 print(sum(w_sort < 0 ), 'eigenvalues are negative')
 print(sum(w_sort == 0 ), 'eigenvalues are zero')
