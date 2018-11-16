@@ -4,7 +4,7 @@ import pandas as pd
 from statsmodels.graphics.gofplots import qqplot
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
-from dataUlt import import_fama_data, get_result, ETF_dict
+from dataUlt import import_fama_data, get_result, ETF_DICT
 
 # (a)
 three_factors = import_fama_data(
@@ -61,8 +61,8 @@ fama_model = ETF_ret.merge(three_factors,
 
 linreg0 = LinearRegression()
 linreg0.fit(fama_model[['Mkt-RF','SMB','HML']].values,
-    fama_model[[i for i in ETF_dict.keys()]].values)
-beta = dict(zip(ETF_dict.keys(), linreg0.coef_[:,0]))
+    fama_model[[i for i in ETF_DICT.keys()]].values)
+beta = dict(zip(ETF_DICT.keys(), linreg0.coef_[:,0]))
 print("beta for the entire historical period is: \n", beta)
 
 linreg1 = LinearRegression()
@@ -70,26 +70,26 @@ beta_roll = pd.DataFrame()
 for i in range(89, len(fama_model), 1):
     fama_model_window = fama_model.iloc[i-89:i]
     linreg1.fit(fama_model_window[['Mkt-RF','SMB','HML']].values,
-        fama_model_window[[x for x in ETF_dict.keys()]].values)
+        fama_model_window[[x for x in ETF_DICT.keys()]].values)
     beta_temp = pd.DataFrame(linreg1.coef_[:,0].reshape(-1,10), 
-        columns = [x for x in ETF_dict.keys()], 
+        columns = [x for x in ETF_DICT.keys()], 
         index = [fama_model_window.index[-1]])
     beta_roll = pd.concat([beta_roll, beta_temp])
 print("these's little evidence showing beta gets more consistant,"+ 
     "while it somewhat gets more 'compact'")
 
 # (f)
-residual = pd.DataFrame({})
+for i in range(len(ETF_DICT)):
 for i in range(len(ETF_dict)):
     pred_ret = (linreg0.coef_[i] * 
         fama_model[['Mkt-RF','SMB','HML']]).sum(axis=1)
     real_ret = fama_model.iloc[:,i]
-    residual_temp = real_ret - pred_ret
+    residual[list(ETF_DICT.keys())[i]] = residual_temp
     residual[list(ETF_dict.keys())[i]] = residual_temp
 print("mean of residual is: \n",residual.mean(axis=0),'\n')
 print("var of residual is: \n",residual.var(axis=0),'\n')
 
-fig = plt.figure(figsize=(20,40))
+for i in range(len(ETF_DICT)-1):
 for i in range(len(ETF_dict)-1):
     exec("ax"+str(i+1)+" = plt.subplot(33"+str(i+1)+")")
     exec("ax"+str(i+1)+".set_title(list(ETF_dict.keys())["+
@@ -103,6 +103,6 @@ print("the residual appears to be normal, which supports the model"+
     "auto-correlated.\nThe auto-correlation of the residual is:\n")
 
 for i in range(len(ETF_dict)):
-    print(list(ETF_dict.keys())[i],' : ',
-        residual.iloc[:,i].autocorr(lag=1))
+for i in range(len(ETF_DICT)):
+    print(list(ETF_DICT.keys())[i],' : ',
 print("\nexcept for SPY, the result supports the assumption of OLS.")
