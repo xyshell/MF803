@@ -56,6 +56,14 @@ def annual_ret_std(df):
     annual_std = np.nanstd(logret.values) * 252 ** 0.5
     return annual_ret, annual_std
 
+def annual_matrix_rets(matrix_ret, freq):
+    del matrix_ret['Date']
+    if freq == 'd':
+        return matrix_ret.sum() / len(matrix_ret) * 252
+    elif freq == 'm':
+        return matrix_ret.sum() / len(matrix_ret) * 12
+    else:
+        raise ValueError("only support d,m, but given "  + freq)
 
 def myhist(array):
     ''' input array, output histograph using Freedman-Diaconis method'''
